@@ -1,0 +1,41 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.6.+'
+    }
+}
+apply plugin: 'android'
+
+repositories {
+    mavenCentral()
+}
+
+android {
+    compileSdkVersion 16
+    buildToolsVersion "18.1.0"
+    dependencies {
+        compile fileTree(dir: 'libs', include: '*.jar')
+        task copyNativeLibs(type: Copy) {
+            from(new File('libs')) { include '**' }
+            into new File(buildDir, 'native-libs')
+        }
+        tasks.withType(Compile) { compileTask -> compileTask.dependsOn copyNativeLibs }
+
+        clean.dependsOn 'cleanCopyNativeLibs'
+
+        tasks.withType(com.android.build.gradle.tasks.PackageApplication) { pkgTask ->
+            pkgTask.jniDir new File(buildDir, 'native-libs')
+        }
+
+    }
+    defaultConfig {
+        minSdkVersion 8
+        targetSdkVersion 16
+    }
+}
+
+dependencies {
+	compile 'com.android.support:appcompat-v7:+'
+}
